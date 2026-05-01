@@ -86,7 +86,7 @@ Point Label::OnMeasureSelf() {
     max_height = background_->get_intrinsic_height();
 	}
 
-  auto font_face = fw::Framework::get_instance()->get_font_manager()->get_face();
+  auto font_face = fw::Get<FontManager>().get_face();
   auto text_size = font_face->measure_string(text_);
 
 	max_width = std::max(max_width, text_size.v[0]);
@@ -119,21 +119,21 @@ void Label::render() {
   if (text_ != "") {
     switch (text_alignment_) {
     case Alignment::kLeft:
-      fw::Framework::get_instance()->get_font_manager()->get_face()->draw_string(
+      fw::Get<FontManager>().get_face()->draw_string(
         rect.left + padding_left_,
         rect.top + rect.height / 2.f + padding_top_,
         text_,
         static_cast<FontFace::DrawFlags>(FontFace::kAlignLeft | FontFace::kAlignMiddle));
       break;
     case Alignment::kCenter:
-      fw::Framework::get_instance()->get_font_manager()->get_face()->draw_string(
+      fw::Get<FontManager>().get_face()->draw_string(
         rect.left + rect.width / 2 + padding_left_,
         rect.top + rect.height / 2 + padding_top_,
         text_,
         static_cast<FontFace::DrawFlags>(FontFace::kAlignCenter | FontFace::kAlignMiddle));
       break;
     case Alignment::kRight:
-      fw::Framework::get_instance()->get_font_manager()->get_face()->draw_string(
+      fw::Get<FontManager>().get_face()->draw_string(
           rect.left + rect.width - padding_right_,
           rect.top + rect.height / 2 + padding_top_,
           text_,

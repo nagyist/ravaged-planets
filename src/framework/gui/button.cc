@@ -198,7 +198,7 @@ Point Button::OnMeasureSelf() {
     max_height = background_->get_intrinsic_height();
   }
 
-  auto font_face = fw::Framework::get_instance()->get_font_manager()->get_face();
+  auto font_face = fw::Get<FontManager>().get_face();
   auto text_size = font_face->measure_string(text_);
 	float text_width = text_size.v[0];
 	float text_height = text_size.v[1];
@@ -242,13 +242,13 @@ void Button::render() {
 
   if (text_.length() > 0) {
     if (text_align_ == kLeft) {
-      fw::Framework::get_instance()->get_font_manager()->get_face()->draw_string(
+      fw::Get<FontManager>().get_face()->draw_string(
           rect.left + padding_left_,
           rect.top + rect.height / 2,
           text_,
           static_cast<fw::FontFace::DrawFlags>(fw::FontFace::kAlignLeft | fw::FontFace::kAlignMiddle));
     } else if (text_align_ == kCenter) {
-      fw::Framework::get_instance()->get_font_manager()->get_face()->draw_string(
+      fw::Get<FontManager>().get_face()->draw_string(
           rect.left + rect.width / 2,
           rect.top + rect.height / 2,
           text_,

@@ -55,7 +55,7 @@ static Framework *only_instance = 0;
 Framework::Framework(BaseApp* app) :
     app_(app), active_(true), camera_(nullptr), paused_(false), particle_mgr_(nullptr),
     timer_(nullptr), audio_manager_(nullptr), input_(nullptr), lang_(nullptr),
-    font_manager_(nullptr), model_manager_(nullptr), cursor_(nullptr),
+     model_manager_(nullptr), cursor_(nullptr),
     debug_view_(nullptr), scenegraph_manager_(nullptr), running_(true) {
   only_instance = this;
 }
@@ -67,8 +67,6 @@ Framework::~Framework() {
     delete input_;
   if (timer_ != nullptr)
     delete timer_;
-  if (font_manager_ != nullptr)
-    delete font_manager_;
   if (particle_mgr_ != nullptr)
     delete particle_mgr_;
   if (cursor_ != nullptr)
@@ -124,8 +122,7 @@ fw::StatusOr<bool> Framework::initialize(char const *title) {
   input_ = new Input();
   input_->initialize();
 
-  font_manager_ = new FontManager();
-  RETURN_IF_ERROR(font_manager_->initialize());
+  RETURN_IF_ERROR(fw::Get<FontManager>().initialize());
 
   if (app_->wants_graphics()) {
     RETURN_IF_ERROR(fw::Get<gui::Gui>().Initialize(audio_manager_));
@@ -291,7 +288,7 @@ void Framework::update_proc() {
 
 void Framework::update(float dt) {
   fw::Get<gui::Gui>().update(dt);
-  font_manager_->update(dt);
+  fw::Get<FontManager>().update(dt);
   audio_manager_->update(dt);
   if (!paused_) {
     app_->update(dt);

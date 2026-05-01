@@ -97,7 +97,6 @@ private:
   ModelManager *model_manager_;
   Cursor *cursor_;
   Lang *lang_;
-  FontManager *font_manager_;
   DebugView *debug_view_;
   sg::ScenegraphManager* scenegraph_manager_;
   volatile bool running_;
@@ -170,9 +169,6 @@ public:
   }
   BaseApp *get_app() const {
     return app_;
-  }
-  FontManager *get_font_manager() const {
-    return font_manager_;
   }
   ModelManager *get_model_manager() const {
     return model_manager_;

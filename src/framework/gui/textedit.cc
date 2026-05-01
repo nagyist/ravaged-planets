@@ -26,7 +26,7 @@ public:
   std::u32string codepoints;
 
   inline TextEditBuffer() {
-    font = fw::Framework::get_instance()->get_font_manager()->get_face();
+    font = fw::Get<fw::FontManager>().get_face();
   }
 };
 
@@ -173,7 +173,7 @@ std::unique_ptr<Property> TextEdit::filter(std::function<bool(std::string ch)> f
 fw::Point TextEdit::OnMeasureSelf() {
   // TODO: support multi-line?
   // TODO: measure actual text size?
-  fw::Point size = fw::Framework::get_instance()->get_font_manager()->get_face()->measure_string(
+  fw::Point size = fw::Get<FontManager>().get_face()->measure_string(
     "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm");
   return fw::Point(
     0.f,
@@ -268,7 +268,7 @@ void TextEdit::render() {
   }
 
   if (!buffer_->codepoints.empty()) {
-    fw::Framework::get_instance()->get_font_manager()->get_face()->draw_string(
+    fw::Get<FontManager>().get_face()->draw_string(
         rect.left + padding_left_, rect.top + rect.height / 2, buffer_->codepoints,
         static_cast<fw::FontFace::DrawFlags>(fw::FontFace::kAlignLeft | fw::FontFace::kAlignMiddle),
         fw::Color::BLACK());

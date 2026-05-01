@@ -17,7 +17,6 @@ typedef struct FT_LibraryRec_ *FT_Library;
 typedef struct FT_FaceRec_*  FT_Face;
 
 namespace fw {
-class FontManager;
 class Glyph;
 class StringCacheEntry;
 
@@ -36,7 +35,6 @@ public:
   };
 
 private:
-  FontManager *manager_;
   FT_Face face_;
   int size_; //<! Size in pixels of this font.
   std::mutex mutex_;
@@ -65,7 +63,7 @@ private:
   std::shared_ptr<StringCacheEntry> get_or_create_cache_entry(std::u32string_view str);
   std::shared_ptr<StringCacheEntry> create_cache_entry(std::u32string_view str);
 public:
-  FontFace(FontManager *manager);
+  FontFace();
   ~FontFace();
 
   fw::Status initialize(std::filesystem::path const &filename);
@@ -103,11 +101,8 @@ public:
 };
 
 class FontManager {
-private:
-  friend class FontFace;
-
-  FT_Library library_;
-  std::map<std::string, std::shared_ptr<FontFace>> faces_;
+public:
+  static std::string service_name;
 
 public:
   fw::Status initialize();
@@ -118,6 +113,12 @@ public:
 
   /** Gets the \ref font_face for the font at the given path (assumed to be a .ttf file). */
   std::shared_ptr<FontFace> get_face(std::filesystem::path const &filename);
+
+private:
+  friend class FontFace;
+
+  FT_Library library_;
+  std::map<std::string, std::shared_ptr<FontFace>> faces_;
 };
 
 }

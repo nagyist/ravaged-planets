@@ -46,6 +46,9 @@ fw::Status check_error(FT_Error error) {
 
 }  // namespace
 
+std::string FontManager::service_name = "FontManager";
+REGISTER_SERVICE(FontManager);
+
 class Glyph {
 public:
   uint32_t ch;
@@ -129,8 +132,8 @@ void StringCacheEntry::EnsureReady() {
 
 //-----------------------------------------------------------------------------
 
-FontFace::FontFace(FontManager *manager)
- : manager_(manager), size_(16) {
+FontFace::FontFace()
+ : size_(16) {
 }
 
 FontFace::~FontFace() {
@@ -140,7 +143,7 @@ FontFace::~FontFace() {
 }
 
 fw::Status FontFace::initialize(std::filesystem::path const &filename) {
-  auto err = FT_New_Face(manager_->library_, filename.string().c_str(), 0, &face_);
+  auto err = FT_New_Face(fw::Get<FontManager>().library_, filename.string().c_str(), 0, &face_);
   RETURN_IF_ERROR(check_error(err));
 
   LOG(INFO) << "loaded " << filename.string() << ": " << face_->num_faces << " face(s) "
@@ -422,7 +425,7 @@ std::shared_ptr<FontFace> FontManager::get_face(fs::path const &filename) {
   // TODO: thread-safety?
   std::shared_ptr<FontFace> face = faces_[filename.string()];
   if (!face) {
-    face = std::make_shared<FontFace>(this);
+    face = std::make_shared<FontFace>();
     auto status = face->initialize(filename);
     if (!status.ok()) {
       LOG(ERR) << "error loading font from " << filename.string() << ": " << status;
