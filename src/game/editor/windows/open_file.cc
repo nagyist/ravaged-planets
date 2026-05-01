@@ -39,7 +39,7 @@ std::string FormatFileSize(uint32_t size) {
 }
 
 enum IDS {
-  FILE_LIST_ID,
+  FILE_LIST_ID = 21897,
   FILENAME_ID,
   OK_ID,
   IMAGE_PREVIEW_ID
@@ -53,27 +53,59 @@ OpenFileWindow::OpenFileWindow() : wnd_(nullptr), show_hidden_(false) {
 OpenFileWindow::~OpenFileWindow() {
 }
 
-void OpenFileWindow::Initialize() {/*
-  wnd_ = Builder<Window>(sum(pct(50), px(-200)), sum(pct(40), px(-150)), px(400), px(300))
-      << Widget::background("frame") << Widget::visible(false)
-      << (Builder<TextEdit>(px(8), px(8), sum(pct(100), px(-16)), px(18))
+void OpenFileWindow::Initialize() {
+  wnd_ = Builder<Window>()
+      << Widget::width(Widget::Fixed(500.f))
+      << Widget::height(Widget::Fixed(300.f))
+      << Widget::background("frame")
+      << Widget::visible(false)
+      << Window::initial_position(WindowInitialPosition::Center())
+      << (Builder<TextEdit>()
+          << Widget::width(Widget::MatchParent())
+          << Widget::height(Widget::Fixed(30.f))
+          << Widget::margin(10.f, 10.f, 0.f, 10.f)
           << Widget::id(FILENAME_ID))
-      << (Builder<Listbox>(px(8), px(30), sum(pct(66), px(-12)), sum(pct(100), px(-76)))
-          << Widget::id(FILE_LIST_ID)
-          << Listbox::item_selected(std::bind(&OpenFileWindow::OnItemSelected, this, _1))
-          << Listbox::item_activated(std::bind(&OpenFileWindow::OnItemActivated, this, _1)))
-      << (Builder<Label>(sum(pct(66), px(4)), px(30), sum(pct(33), px(-12)), px(100))
-          << Widget::id(IMAGE_PREVIEW_ID))
-      << (Builder<Button>(sum(pct(100), px(-176)), sum(pct(100), px(-38)), px(80), px(30))
-          << Button::text("OK") << Widget::id(OK_ID)
+      << (Builder<LinearLayout>()
+          << Widget::width(Widget::MatchParent())
+          << Widget::height(Widget::MatchParent())
+          << Widget::margin(50.f, 10.f, 50.f, 10.f)
+          << LinearLayout::orientation(LinearLayout::Orientation::kHorizontal)
+          << (Builder<Listbox>()
+              << LinearLayout::weight(1.f)
+              << Widget::height(Widget::MatchParent())
+              << Widget::margin(0.f, 5.f, 0.f, 5.f)
+              << Widget::id(FILE_LIST_ID)
+              << Listbox::item_selected(std::bind(&OpenFileWindow::OnItemSelected, this, _1))
+              << Listbox::item_activated(std::bind(&OpenFileWindow::OnItemActivated, this, _1)))
+          << (Builder<Label>()
+              << LinearLayout::weight(1.f)
+              << Widget::height(Widget::MatchParent())
+              << Widget::margin(0.f, 5.f, 0.f, 5.f)
+              << Widget::id(IMAGE_PREVIEW_ID))
+      )
+      << (Builder<Button>()
+          << Widget::width(Widget::Fixed(100.f))
+          << Widget::height(Widget::Fixed(30.f))
+          << Widget::gravity(LayoutParams::Gravity::kRight | LayoutParams::Gravity::kBottom)
+          << Widget::margin(0.f, 10.f, 10.f, 0.f)
+          << Button::text("OK")
+          << Widget::id(OK_ID)
           << Button::click(std::bind(&OpenFileWindow::OnOkClicked, this, _1)))
-      << (Builder<Button>(sum(pct(100), px(-88)), sum(pct(100), px(-38)), px(80), px(30))
+      << (Builder<Button>()
+          << Widget::width(Widget::Fixed(100.f))
+          << Widget::height(Widget::Fixed(30.f))
+          << Widget::gravity(LayoutParams::Gravity::kRight | LayoutParams::Gravity::kBottom)
+          << Widget::margin(0.f, 120.f, 10.f, 0.f)
           << Button::text("Cancel")
           << Button::click(std::bind(&OpenFileWindow::OnCancelClicked, this, _1)))
-      << (Builder<Checkbox>(px(8), sum(pct(100), px(-32)), px(150), px(18))
+      << (Builder<Checkbox>()
+          << Widget::width(Widget::WrapContent())
+          << Widget::height(Widget::Fixed(30.f))
+          << Widget::gravity(LayoutParams::Gravity::kLeft | LayoutParams::Gravity::kBottom)
+          << Widget::margin(0.f, 0.f, 10.f, 10.f)
           << Checkbox::text("Show hidden files")
           << Widget::click(std::bind(&OpenFileWindow::OnShowHiddenClicked, this, _1)));
-  fw::Get<Gui>().attach_widget(wnd_);*/
+  fw::Get<Gui>().AttachWindow(wnd_);
   curr_directory_ = fw::user_base_path();
 }
 
@@ -97,14 +129,25 @@ void OpenFileWindow::AddRow(Listbox &lbx, std::string_view name) {
 
   std::string icon_name =
       fs::is_directory(full_path) ? "editor_icon_directory" : "editor_icon_file";
-  /*
-  lbx.add_item(Builder<Widget>(px(0), px(0), pct(100), px(20))
-      << (Builder<Label>(px(0), px(0), px(20), px(20))
-          << Label::background(icon_name, true))
-      << (Builder<Label>(px(28), px(0), sum(pct(75), px(-28)), px(20)) << Label::text(name))
-      << (Builder<Label>(pct(75), px(0), pct(25), px(20))
-          << Label::text(file_size) << Label::text_align(Label::kRight)));
-  items_.push_back(std::string(name));*/
+
+  lbx.AddItem(Builder<LinearLayout>()
+          << Widget::width(Widget::MatchParent())
+          << Widget::height(Widget::WrapContent())
+          << LinearLayout::orientation(LinearLayout::Orientation::kHorizontal)
+          << (Builder<Label>()
+              << Widget::width(Widget::WrapContent())
+              << Widget::height(Widget::WrapContent())
+              << Label::background(icon_name, true))
+          << (Builder<Label>()
+              << LinearLayout::weight(1.f)
+              << Widget::height(Widget::WrapContent())
+              << Label::text(name))
+          << (Builder<Label>()
+              << Widget::width(Widget::WrapContent())
+              << Widget::height(Widget::WrapContent())
+              << Label::text(file_size))
+      );
+  items_.push_back(std::string(name));
 }
 
 void OpenFileWindow::Refresh() {

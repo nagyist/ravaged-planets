@@ -36,7 +36,6 @@ SaveMapWindow::SaveMapWindow() : wnd_(nullptr) {
 }
 
 SaveMapWindow::~SaveMapWindow() {
-  fw::Get<Gui>().DetachWindow(wnd_);
 }
 
 void SaveMapWindow::initialize() {
