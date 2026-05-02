@@ -198,8 +198,8 @@ Point Button::OnMeasureSelf() {
     max_height = background_->get_intrinsic_height();
   }
 
-  auto font_face = fw::Get<FontManager>().get_face();
-  auto text_size = font_face->measure_string(text_);
+  auto font_face = fw::Get<FontManager>().GetFace();
+  auto text_size = font_face->MeasureString(text_);
 	float text_width = text_size.v[0];
 	float text_height = text_size.v[1];
 
@@ -242,17 +242,17 @@ void Button::render() {
 
   if (text_.length() > 0) {
     if (text_align_ == kLeft) {
-      fw::Get<FontManager>().get_face()->draw_string(
+      fw::Get<FontManager>().GetFace()->DrawString(
           rect.left + padding_left_,
           rect.top + rect.height / 2,
           text_,
-          static_cast<fw::FontFace::DrawFlags>(fw::FontFace::kAlignLeft | fw::FontFace::kAlignMiddle));
+          fw::FontFace::kAlignLeft | fw::FontFace::kAlignMiddle);
     } else if (text_align_ == kCenter) {
-      fw::Get<FontManager>().get_face()->draw_string(
+      fw::Get<FontManager>().GetFace()->DrawString(
           rect.left + rect.width / 2,
           rect.top + rect.height / 2,
           text_,
-          static_cast<fw::FontFace::DrawFlags>(fw::FontFace::kAlignCenter | fw::FontFace::kAlignMiddle));
+          fw::FontFace::kAlignCenter | fw::FontFace::kAlignMiddle);
     }
   }
 }

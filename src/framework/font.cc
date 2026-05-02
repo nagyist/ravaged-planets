@@ -27,7 +27,7 @@ namespace fs = std::filesystem;
 namespace fw {
 namespace {
 
-const std::string get_error_message(FT_Error err) {
+const std::string GetErrorMessage(FT_Error err) {
   #undef FTERRORS_H_
   #define FT_ERRORDEF( e, v, s )  case e: return s;
   #define FT_ERROR_START_LIST     switch (err) {
@@ -36,12 +36,12 @@ const std::string get_error_message(FT_Error err) {
   return "(Unknown error)";
 }
 
-fw::Status check_error(FT_Error error) {
+fw::Status CheckError(FT_Error error) {
   if (!error) {
     return fw::OkStatus();
   }
 
-  return fw::ErrorStatus("font error: ") << get_error_message(error);
+  return fw::ErrorStatus("font error: ") << GetErrorMessage(error);
 }
 
 }  // namespace
@@ -74,8 +74,9 @@ Glyph::Glyph(uint32_t ch, int glyph_index, int offset_x, int offset_y, float adv
     float advance_y, int bitmap_left, int bitmap_top, int bitmap_width, int bitmap_height,
     float distance_from_baseline_to_top, float distance_from_baseline_to_bottom) :
     ch(ch), glyph_index(glyph_index), offset_x(offset_x), offset_y(offset_y), advance_x(advance_x),
-    advance_y(advance_y), bitmap_left(bitmap_left), bitmap_top(bitmap_top), bitmap_width(bitmap_width),
-    bitmap_height(bitmap_height), distance_from_baseline_to_top(distance_from_baseline_to_top),
+    advance_y(advance_y), bitmap_left(bitmap_left), bitmap_top(bitmap_top),
+    bitmap_width(bitmap_width), bitmap_height(bitmap_height),
+    distance_from_baseline_to_top(distance_from_baseline_to_top),
     distance_from_baseline_to_bottom(distance_from_baseline_to_bottom) {
 }
 
@@ -132,8 +133,8 @@ void StringCacheEntry::EnsureReady() {
 
 //-----------------------------------------------------------------------------
 
-FontFace::FontFace()
- : size_(16) {
+FontFace::FontFace(int size /*= 16*/)
+ : size_(size) {
 }
 
 FontFace::~FontFace() {
@@ -142,15 +143,15 @@ FontFace::~FontFace() {
   }
 }
 
-fw::Status FontFace::initialize(std::filesystem::path const &filename) {
+fw::Status FontFace::Initialize(std::filesystem::path const &filename) {
   auto err = FT_New_Face(fw::Get<FontManager>().library_, filename.string().c_str(), 0, &face_);
-  RETURN_IF_ERROR(check_error(err));
+  RETURN_IF_ERROR(CheckError(err));
 
   LOG(INFO) << "loaded " << filename.string() << ": " << face_->num_faces << " face(s) "
       << face_->num_glyphs << " glyph(s)";
 
   err = FT_Set_Pixel_Sizes(face_, 0, size_);
-  RETURN_IF_ERROR(check_error(err));
+  RETURN_IF_ERROR(CheckError(err));
 
   // TODO: allow us to resize the bitmap?
   bitmap_ = std::make_shared<fw::Bitmap>(256, 256);
@@ -160,7 +161,7 @@ fw::Status FontFace::initialize(std::filesystem::path const &filename) {
   return fw::OkStatus();
 }
 
-void FontFace::update(float dt) {
+void FontFace::Update(float dt) {
   // We actually want this to run on the render thread.
   fw::Get<fw::Graphics>().run_on_render_thread([=]() {
     std::unique_lock<std::mutex> lock(mutex_);
@@ -179,11 +180,11 @@ void FontFace::update(float dt) {
   });
 }
 
-void FontFace::ensure_glyphs(std::string_view str) {
-  ensure_glyphs(utf8::utf8to32(str));
+void FontFace::EnsureGlyphs(std::string_view str) {
+  EnsureGlyphs(utf8::utf8to32(str));
 }
 
-fw::Status FontFace::ensure_glyph(char32_t ch) {
+fw::Status FontFace::EnsureGlyph(char32_t ch) {
   if (glyphs_.find(ch) != glyphs_.end()) {
     // Already cached.
     return OkStatus();
@@ -196,10 +197,10 @@ fw::Status FontFace::ensure_glyph(char32_t ch) {
   int glyph_index = FT_Get_Char_Index(face_, ch);
 
   // Load the glyph into the glyph slot and render it if it's not a bitmap
-  RETURN_IF_ERROR(check_error(FT_Load_Glyph(face_, glyph_index, FT_LOAD_DEFAULT)));
+  RETURN_IF_ERROR(CheckError(FT_Load_Glyph(face_, glyph_index, FT_LOAD_DEFAULT)));
   if (face_->glyph->format != FT_GLYPH_FORMAT_BITMAP) {
     // TODO: FT_RENDER_MODE_LCD?
-    RETURN_IF_ERROR(check_error(FT_Render_Glyph(face_->glyph, FT_RENDER_MODE_NORMAL)));
+    RETURN_IF_ERROR(CheckError(FT_Render_Glyph(face_->glyph, FT_RENDER_MODE_NORMAL)));
   }
 
   // TODO: better bitmap packing than just a straight grid
@@ -228,9 +229,9 @@ fw::Status FontFace::ensure_glyph(char32_t ch) {
   return fw::OkStatus();
 }
 
-void FontFace::ensure_glyphs(std::u32string_view str) {
+void FontFace::EnsureGlyphs(std::u32string_view str) {
   for (uint32_t ch : str) {
-    auto status = ensure_glyph(ch);
+    auto status = EnsureGlyph(ch);
     if (!status.ok()) {
       LOG(ERR) << "error ensuring glyph '"
                << utf8::utf32to8(std::u32string(1, ch)) << "' " << status;
@@ -241,21 +242,21 @@ void FontFace::ensure_glyphs(std::u32string_view str) {
   }
 }
 
-fw::Point FontFace::measure_string(std::string_view str) {
-  return measure_string(utf8::utf8to32(str));
+fw::Point FontFace::MeasureString(std::string_view str) {
+  return MeasureString(utf8::utf8to32(str));
 }
 
-fw::Point FontFace::measure_string(std::u32string_view str) {
-  std::shared_ptr<StringCacheEntry> data = get_or_create_cache_entry(str);
+fw::Point FontFace::MeasureString(std::u32string_view str) {
+  std::shared_ptr<StringCacheEntry> data = GetOrCreateCacheEntry(str);
   return data->size;
 }
 
-fw::Point FontFace::measure_substring(std::u32string_view str, int pos, int num_chars) {
-  ensure_glyphs(str);
+fw::Point FontFace::MeasureSubstring(std::u32string_view str, int pos, int num_chars) {
+  EnsureGlyphs(str);
 
   fw::Point size(0, 0);
   for (int i = pos; i < pos + num_chars; i++) {
-    auto glyph_size_or_status = measure_glyph(str[i]);
+    auto glyph_size_or_status = MeasureGlyph(str[i]);
     if (!glyph_size_or_status.ok()) {
       continue;
     }
@@ -269,21 +270,21 @@ fw::Point FontFace::measure_substring(std::u32string_view str, int pos, int num_
   return size;
 }
 
-fw::StatusOr<fw::Point> FontFace::measure_glyph(char32_t ch) {
-  RETURN_IF_ERROR(ensure_glyph(ch));
+fw::StatusOr<fw::Point> FontFace::MeasureGlyph(char32_t ch) {
+  RETURN_IF_ERROR(EnsureGlyph(ch));
   Glyph *g = glyphs_[ch];
   float y = g->distance_from_baseline_to_top + g->distance_from_baseline_to_bottom;
   return fw::Point(g->advance_x, y);
 }
 
-void FontFace::draw_string(int x, int y, std::string const &str, DrawFlags flags /*= 0*/,
+void FontFace::DrawString(int x, int y, std::string const &str, DrawFlags flags /*= 0*/,
     fw::Color color /*= fw::color::WHITE*/) {
-  draw_string(x, y, utf8::utf8to32(str), flags, color);
+  DrawString(x, y, utf8::utf8to32(str), flags, color);
 }
 
-void FontFace::draw_string(
+void FontFace::DrawString(
     int x, int y, std::u32string_view str, DrawFlags flags, fw::Color color) {
-  std::shared_ptr<StringCacheEntry> data = get_or_create_cache_entry(str);
+  std::shared_ptr<StringCacheEntry> data = GetOrCreateCacheEntry(str);
   data->EnsureReady();
 
   if (texture_dirty_) {
@@ -331,20 +332,20 @@ void FontFace::draw_string(
   data->time_since_use = 0.0f;
 }
 
-std::shared_ptr<StringCacheEntry> FontFace::get_or_create_cache_entry(std::u32string_view str) {
+std::shared_ptr<StringCacheEntry> FontFace::GetOrCreateCacheEntry(std::u32string_view str) {
   std::unique_lock<std::mutex> lock(mutex_);
   auto it = string_cache_.find(std::u32string(str));
   if (it != string_cache_.end()) {
     return it->second;
   }
 
-  auto data = create_cache_entry(str);
+  auto data = CreateCacheEntry(str);
   string_cache_[std::u32string(str)] = data;
   return data;
 }
 
-std::shared_ptr<StringCacheEntry> FontFace::create_cache_entry(std::u32string_view str) {
-  ensure_glyphs(str);
+std::shared_ptr<StringCacheEntry> FontFace::CreateCacheEntry(std::u32string_view str) {
+  EnsureGlyphs(str);
 
   std::vector<fw::vertex::xyz_uv> verts;
   verts.reserve(str.size() * 4);
@@ -404,29 +405,29 @@ std::shared_ptr<StringCacheEntry> FontFace::create_cache_entry(std::u32string_vi
 
 //-----------------------------------------------------------------------------
 
-fw::Status FontManager::initialize() {
-  RETURN_IF_ERROR(check_error(FT_Init_FreeType(&library_)));
+fw::Status FontManager::Initialize() {
+  RETURN_IF_ERROR(CheckError(FT_Init_FreeType(&library_)));
 
   return fw::OkStatus();
 }
 
-void FontManager::update(float dt) {
+void FontManager::Update(float dt) {
   for (auto it : faces_) {
-    it.second->update(dt);
+    it.second->Update(dt);
   }
 }
 
-std::shared_ptr<FontFace> FontManager::get_face() {
-  return get_face(fw::resolve("gui/" + fw::text("lang.font")));
+std::shared_ptr<FontFace> FontManager::GetFace() {
+  return GetFace(fw::resolve("gui/" + fw::text("lang.font")));
 }
 
 /** Gets the \ref font_face for the font at the given path (assumed to be a .ttf file). */
-std::shared_ptr<FontFace> FontManager::get_face(fs::path const &filename) {
+std::shared_ptr<FontFace> FontManager::GetFace(fs::path const &filename) {
   // TODO: thread-safety?
   std::shared_ptr<FontFace> face = faces_[filename.string()];
   if (!face) {
     face = std::make_shared<FontFace>();
-    auto status = face->initialize(filename);
+    auto status = face->Initialize(filename);
     if (!status.ok()) {
       LOG(ERR) << "error loading font from " << filename.string() << ": " << status;
       // Keep going, we'll add the uninitialized font so we don't keep trying.

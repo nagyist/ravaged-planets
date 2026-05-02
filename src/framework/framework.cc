@@ -122,7 +122,7 @@ fw::StatusOr<bool> Framework::initialize(char const *title) {
   input_ = new Input();
   input_->initialize();
 
-  RETURN_IF_ERROR(fw::Get<FontManager>().initialize());
+  RETURN_IF_ERROR(fw::Get<FontManager>().Initialize());
 
   if (app_->wants_graphics()) {
     RETURN_IF_ERROR(fw::Get<gui::Gui>().Initialize(audio_manager_));
@@ -288,7 +288,7 @@ void Framework::update_proc() {
 
 void Framework::update(float dt) {
   fw::Get<gui::Gui>().update(dt);
-  fw::Get<FontManager>().update(dt);
+  fw::Get<FontManager>().Update(dt);
   audio_manager_->update(dt);
   if (!paused_) {
     app_->update(dt);

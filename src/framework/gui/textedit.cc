@@ -26,7 +26,7 @@ public:
   std::u32string codepoints;
 
   inline TextEditBuffer() {
-    font = fw::Get<fw::FontManager>().get_face();
+    font = fw::Get<fw::FontManager>().GetFace();
   }
 };
 
@@ -46,7 +46,7 @@ char STB_TEXTEDIT_GETCHAR(const TextEditBuffer *buffer, int idx) {
 }
 
 float STB_TEXTEDIT_GETWIDTH(TextEditBuffer *buffer, int line_start_idx, int char_idx) {
-  auto size = buffer->font->measure_glyph(buffer->codepoints[char_idx]);
+  auto size = buffer->font->MeasureGlyph(buffer->codepoints[char_idx]);
   if (!size.ok()) {
     return 0.0f;
   }
@@ -69,7 +69,7 @@ void STB_TEXTEDIT_LAYOUTROW(StbTexteditRow *r, TextEditBuffer *buffer, int line_
   const char32_t *text_remaining = nullptr;
 
   // TODO: handle actual more than one line...
-  const fw::Point size = buffer->font->measure_string(buffer->codepoints);
+  const fw::Point size = buffer->font->MeasureString(buffer->codepoints);
   r->x0 = 0.0f;
   r->x1 = size[0];
   r->baseline_y_delta = size[1];
@@ -173,7 +173,7 @@ std::unique_ptr<Property> TextEdit::filter(std::function<bool(std::string ch)> f
 fw::Point TextEdit::OnMeasureSelf() {
   // TODO: support multi-line?
   // TODO: measure actual text size?
-  fw::Point size = fw::Get<FontManager>().get_face()->measure_string(
+  fw::Point size = fw::Get<FontManager>().GetFace()->MeasureString(
     "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm");
   return fw::Point(
     0.f,
@@ -268,15 +268,15 @@ void TextEdit::render() {
   }
 
   if (!buffer_->codepoints.empty()) {
-    fw::Get<FontManager>().get_face()->draw_string(
+    fw::Get<FontManager>().GetFace()->DrawString(
         rect.left + padding_left_, rect.top + rect.height / 2, buffer_->codepoints,
-        static_cast<fw::FontFace::DrawFlags>(fw::FontFace::kAlignLeft | fw::FontFace::kAlignMiddle),
+        fw::FontFace::kAlignLeft | fw::FontFace::kAlignMiddle,
         fw::Color::BLACK());
   }
 
   if (focused_ && draw_cursor_) {
     int cursor_pos = buffer_->state.cursor;
-    fw::Point size_to_cursor = buffer_->font->measure_substring(buffer_->codepoints, 0, cursor_pos);
+    fw::Point size_to_cursor = buffer_->font->MeasureSubstring(buffer_->codepoints, 0, cursor_pos);
     float left = rect.left + size_to_cursor[0] + padding_left_;
     cursor_->render(left, rect.top + 2, 1.0f, rect.height - 4.0f);
   }

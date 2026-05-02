@@ -51,7 +51,7 @@ void Checkbox::OnAttachedToParent(Widget &parent) {
 
 fw::Point Checkbox::OnMeasureSelf() {
   fw::Point text_size = 
-    fw::Get<FontManager>().get_face()->measure_string(text_);
+    fw::Get<FontManager>().GetFace()->MeasureString(text_);
   return fw::Point(
     check_icon_->get_intrinsic_width() + 12.f + text_size[0],
     std::max(check_icon_->get_intrinsic_height() + 8.f, text_size[1]));
@@ -106,11 +106,11 @@ void Checkbox::render() {
   }
 
   if (text_.length() > 0) {
-    fw::Get<FontManager>().get_face()->draw_string(
+    fw::Get<FontManager>().GetFace()->DrawString(
         rect.left + icon_rect.width + 12.f,
         rect.top + rect.height / 2,
         text_,
-        static_cast<fw::FontFace::DrawFlags>(fw::FontFace::kAlignLeft | fw::FontFace::kAlignMiddle));
+        fw::FontFace::kAlignLeft | fw::FontFace::kAlignMiddle);
   }
 }
 

@@ -14,7 +14,7 @@
 
 /* Cut'n'pasted from the freetype.h header so we don't have to include that whole thing. */
 typedef struct FT_LibraryRec_ *FT_Library;
-typedef struct FT_FaceRec_*  FT_Face;
+typedef struct FT_FaceRec_ *FT_Face;
 
 namespace fw {
 class Glyph;
@@ -34,7 +34,48 @@ public:
     kAlignRight    = 0x0010,
   };
 
+  explicit FontFace(int size = 16);
+  ~FontFace();
+
+  fw::Status Initialize(std::filesystem::path const& filename);
+
+  /** Called by the font_managed every update frame. */
+  void Update(float dt);
+
+  // Only useful for debugging, gets the atlas bitmap we're using to hold rendered glyphs
+  std::shared_ptr<fw::Bitmap> get_bitmap() const {
+    return bitmap_;
+  }
+
+  /**
+   * Pre-renders all of the glyphs required to render the given string, useful when starting up to
+   * ensure common characters are already available.
+   */
+  void EnsureGlyphs(std::string_view str);
+
+  /** Measures the given string and returns the width/height of the final rendered string. */
+  fw::Point MeasureString(std::string_view str);
+  fw::Point MeasureString(std::u32string_view str);
+  fw::Point MeasureSubstring(std::u32string_view str, int pos, int num_chars);
+
+  /** Measures a single glyph. */
+  fw::StatusOr<fw::Point> MeasureGlyph(char32_t ch);
+
+  /** Draws the given string on the screen at the given (x,y) coordinates. */
+  void DrawString(
+    int x, int y, std::string const& str, DrawFlags flags = kDrawDefault,
+    fw::Color color = fw::Color::WHITE());
+
+  /** Draws the given string on the screen at the given (x,y) coordinates. */
+  void DrawString(
+    int x, int y, std::u32string_view str, DrawFlags flags, fw::Color color);
+
 private:
+  fw::Status EnsureGlyph(char32_t ch);
+  void EnsureGlyphs(std::u32string_view str);
+  std::shared_ptr<StringCacheEntry> GetOrCreateCacheEntry(std::u32string_view str);
+  std::shared_ptr<StringCacheEntry> CreateCacheEntry(std::u32string_view str);
+
   FT_Face face_;
   int size_; //<! Size in pixels of this font.
   std::mutex mutex_;
@@ -43,7 +84,7 @@ private:
   // when draw is called.
   std::shared_ptr<fw::Bitmap> bitmap_;
   std::shared_ptr<fw::Texture> texture_;
-  bool texture_dirty_;
+  bool texture_dirty_ = false;
 
   /** Mapping of UTF-32 character to glyph object describing the glyph. */
   std::map<char32_t, Glyph *> glyphs_;
@@ -57,62 +98,26 @@ private:
    * the given string.
    */
   std::map<std::u32string, std::shared_ptr<StringCacheEntry>> string_cache_;
-
-  fw::Status ensure_glyph(char32_t ch);
-  void ensure_glyphs(std::u32string_view str);
-  std::shared_ptr<StringCacheEntry> get_or_create_cache_entry(std::u32string_view str);
-  std::shared_ptr<StringCacheEntry> create_cache_entry(std::u32string_view str);
-public:
-  FontFace();
-  ~FontFace();
-
-  fw::Status initialize(std::filesystem::path const &filename);
-
-  /** Called by the font_managed every update frame. */
-  void update(float dt);
-
-  // Only useful for debugging, gets the atlas bitmap we're using to hold rendered glyphs
-  std::shared_ptr<fw::Bitmap> get_bitmap() const {
-    return bitmap_;
-  }
-
-  /**
-   * Pre-renders all of the glyphs required to render the given string, useful when starting up to
-   * ensure common characters are already available.
-   */
-  void ensure_glyphs(std::string_view str);
-
-  /** Measures the given string and returns the width/height of the final rendered string. */
-  fw::Point measure_string(std::string_view str);
-  fw::Point measure_string(std::u32string_view str);
-  fw::Point measure_substring(std::u32string_view str, int pos, int num_chars);
-
-  /** Measures a single glyph. */
-  fw::StatusOr<fw::Point> measure_glyph(char32_t ch);
-
-  /**
-   * Draws the given string on the Screen at the given (x,y) coordinates.
-   */
-  void draw_string(
-      int x, int y, std::string const &str, DrawFlags flags = kDrawDefault,
-      fw::Color color = fw::Color::WHITE());
-  void draw_string(
-      int x, int y, std::u32string_view str, DrawFlags flags, fw::Color color);
 };
+
+inline FontFace::DrawFlags operator |(FontFace::DrawFlags lhs, FontFace::DrawFlags rhs) {
+  using T = std::underlying_type_t<FontFace::DrawFlags>;
+  return static_cast<FontFace::DrawFlags>(static_cast<T>(lhs) | static_cast<T>(rhs));
+}
 
 class FontManager {
 public:
   static std::string service_name;
 
 public:
-  fw::Status initialize();
-  void update(float dt);
+  fw::Status Initialize();
+  void Update(float dt);
 
   /** Gets the default \ref font_face. */
-  std::shared_ptr<FontFace> get_face();
+  std::shared_ptr<FontFace> GetFace();
 
   /** Gets the \ref font_face for the font at the given path (assumed to be a .ttf file). */
-  std::shared_ptr<FontFace> get_face(std::filesystem::path const &filename);
+  std::shared_ptr<FontFace> GetFace(std::filesystem::path const &filename);
 
 private:
   friend class FontFace;
