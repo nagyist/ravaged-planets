@@ -34,6 +34,14 @@ public:
     kAlignRight    = 0x0010,
   };
 
+  enum MeasureFlags {
+    kMeasureDefault      = 0x0000,
+    // Measure the actual height of the text. Normally, we just return the pixel size as the
+    // height. But with this flag we measure the actual height of the glyphs (e.g. a period will
+    // be around 1px height).
+    kMeasureActualHeight = 0x0001,
+  };
+
   explicit FontFace(int size = 16);
   ~FontFace();
 
@@ -54,9 +62,17 @@ public:
   void EnsureGlyphs(std::string_view str);
 
   /** Measures the given string and returns the width/height of the final rendered string. */
-  fw::Point MeasureString(std::string_view str);
-  fw::Point MeasureString(std::u32string_view str);
-  fw::Point MeasureSubstring(std::u32string_view str, int pos, int num_chars);
+  fw::Point MeasureString(
+      std::string_view str, MeasureFlags flags = MeasureFlags::kMeasureDefault);
+  /** Measures the given string and returns the width/height of the final rendered string. */
+  fw::Point MeasureString(
+      std::u32string_view str, MeasureFlags flags = MeasureFlags::kMeasureDefault);
+  /** Measures the given string and returns the width/height of the final rendered string. */
+  fw::Point MeasureSubstring(
+      std::u32string_view str,
+      int pos,
+      int num_chars,
+      MeasureFlags flags = MeasureFlags::kMeasureDefault);
 
   /** Measures a single glyph. */
   fw::StatusOr<fw::Point> MeasureGlyph(char32_t ch);
@@ -103,6 +119,11 @@ private:
 inline FontFace::DrawFlags operator |(FontFace::DrawFlags lhs, FontFace::DrawFlags rhs) {
   using T = std::underlying_type_t<FontFace::DrawFlags>;
   return static_cast<FontFace::DrawFlags>(static_cast<T>(lhs) | static_cast<T>(rhs));
+}
+
+inline FontFace::MeasureFlags operator |(FontFace::MeasureFlags lhs, FontFace::MeasureFlags rhs) {
+  using T = std::underlying_type_t<FontFace::MeasureFlags>;
+  return static_cast<FontFace::MeasureFlags>(static_cast<T>(lhs) | static_cast<T>(rhs));
 }
 
 class FontManager {

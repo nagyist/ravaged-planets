@@ -242,17 +242,25 @@ void FontFace::EnsureGlyphs(std::u32string_view str) {
   }
 }
 
-fw::Point FontFace::MeasureString(std::string_view str) {
-  return MeasureString(utf8::utf8to32(str));
+fw::Point FontFace::MeasureString(std::string_view str, MeasureFlags flags) {
+  return MeasureString(utf8::utf8to32(str), flags);
 }
 
-fw::Point FontFace::MeasureString(std::u32string_view str) {
-  std::shared_ptr<StringCacheEntry> data = GetOrCreateCacheEntry(str);
-  return data->size;
+fw::Point FontFace::MeasureString(std::u32string_view str, MeasureFlags flags) {
+  if (flags & MeasureFlags::kMeasureDefault) {
+    std::shared_ptr<StringCacheEntry> data = GetOrCreateCacheEntry(str);
+    return data->size;
+  }
+
+  // If using non-default flags, we need to measure the whole thing.
+  return MeasureSubstring(str, 0, str.size(), flags);
 }
 
-fw::Point FontFace::MeasureSubstring(std::u32string_view str, int pos, int num_chars) {
+fw::Point FontFace::MeasureSubstring(
+    std::u32string_view str, int pos, int num_chars, MeasureFlags flags) {
   EnsureGlyphs(str);
+
+  // TODO: support multi-line strings.
 
   fw::Point size(0, 0);
   for (int i = pos; i < pos + num_chars; i++) {
@@ -265,6 +273,11 @@ fw::Point FontFace::MeasureSubstring(std::u32string_view str, int pos, int num_c
     if (size[1] < glyph_size[1]) {
       size[1] = glyph_size[1];
     }
+  }
+
+  // If we're not measuring the actual height of the string, then the height is the pixel height.
+  if ((flags & MeasureFlags::kMeasureActualHeight) == 0) {
+    size[1] = size_;
   }
 
   return size;
@@ -396,10 +409,9 @@ std::shared_ptr<StringCacheEntry> FontFace::CreateCacheEntry(std::u32string_view
     }
   }
 
-
   return std::shared_ptr<StringCacheEntry>(new StringCacheEntry(
       std::move(verts), std::move(indices),
-      fw::Point(x, max_distance_to_bottom + max_distance_to_top), max_distance_to_top,
+      fw::Point(x, size_), max_distance_to_top,
       max_distance_to_bottom));
 }
 
