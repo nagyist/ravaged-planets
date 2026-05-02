@@ -137,14 +137,17 @@ void OpenFileWindow::AddRow(Listbox &lbx, std::string_view name) {
           << (Builder<Label>()
               << Widget::width(Widget::WrapContent())
               << Widget::height(Widget::WrapContent())
+              << Widget::padding(2.f, 2.f, 2.f, 2.f)
               << Label::background(icon_name, true))
           << (Builder<Label>()
               << LinearLayout::weight(1.f)
               << Widget::height(Widget::WrapContent())
+              << Widget::padding(2.f, 4.f, 2.f, 4.f)
               << Label::text(name))
           << (Builder<Label>()
               << Widget::width(Widget::WrapContent())
               << Widget::height(Widget::WrapContent())
+              << Widget::padding(2.f, 8.f, 2.f, 4.f)
               << Label::text(file_size))
       );
   items_.push_back(std::string(name));
