@@ -74,7 +74,7 @@ Bitmap& Bitmap::operator =(fw::Bitmap const &copy) {
   return (*this);
 }
 
-StatusOr<Bitmap> load_bitmap(fs::path const &filename) {
+StatusOr<Bitmap> LoadBitmap(fs::path const &filename) {
   LOG(INFO) << "loading image: " << filename.string();
   auto data = std::make_shared<BitmapData>(0, 0);
 
@@ -95,7 +95,7 @@ StatusOr<Bitmap> load_bitmap(fs::path const &filename) {
   return Bitmap(data);
 }
 
-StatusOr<Bitmap> load_bitmap(uint8_t const *data, size_t data_size) {
+StatusOr<Bitmap> LoadBitmap(uint8_t const *data, size_t data_size) {
   int channels;
   int width;
   int height;
@@ -114,7 +114,7 @@ StatusOr<Bitmap> load_bitmap(uint8_t const *data, size_t data_size) {
   return Bitmap(bitmap_data);
 }
 
-Bitmap load_bitmap(Texture &tex) {
+Bitmap LoadBitmap(Texture &tex) {
   FW_ENSURE_RENDER_THREAD();
 
   tex.ensure_created();
@@ -140,7 +140,7 @@ Bitmap load_bitmap(Texture &tex) {
   return Bitmap(data);
 }
 
-Status Bitmap::save_bitmap(fs::path const &filename) const {
+Status Bitmap::SaveBitmap(fs::path const &filename) const {
   if (data_ == nullptr)
     return OkStatus();
 
@@ -189,11 +189,11 @@ fs::path Bitmap::get_filename() const {
   return data_->filename;
 }
 
-std::vector<uint32_t> const &Bitmap::get_pixels() const {
+std::vector<uint32_t> const &Bitmap::GetPixels() const {
   return data_->rgba;
 }
 
-void Bitmap::get_pixels(std::vector<uint32_t> &rgba) const {
+void Bitmap::GetPixels(std::vector<uint32_t> &rgba) const {
   if (data_ == 0)
     return;
 
@@ -205,7 +205,7 @@ void Bitmap::get_pixels(std::vector<uint32_t> &rgba) const {
   memcpy(rgba.data(), data_->rgba.data(), width * height * sizeof(uint32_t));
 }
 
-void Bitmap::set_pixels(std::vector<uint32_t> const &rgba) {
+void Bitmap::SetPixels(std::vector<uint32_t> const &rgba) {
   int width = get_width();
   int height = get_height();
 
@@ -213,19 +213,19 @@ void Bitmap::set_pixels(std::vector<uint32_t> const &rgba) {
   memcpy(data_->rgba.data(), rgba.data(), width * height * sizeof(uint32_t));
 }
 
-fw::Color Bitmap::get_pixel(int x, int y) {
+fw::Color Bitmap::GetPixel(int x, int y) {
   return fw::Color::from_rgba(data_->rgba[(get_width() * y) + x]);
 }
 
-void Bitmap::set_pixel(int x, int y, fw::Color color) {
+void Bitmap::SetPixel(int x, int y, fw::Color color) {
   data_->rgba[(get_width() * y) + x] = color.to_rgba();
 }
 
-void Bitmap::set_pixel(int x, int y, uint32_t rgba) {
+void Bitmap::SetPixel(int x, int y, uint32_t rgba) {
   data_->rgba[(get_width() * y) + x] = rgba;
 }
 
-void Bitmap::resize(int new_width, int new_height) {
+void Bitmap::Resize(int new_width, int new_height) {
   int curr_width = get_width();
   int curr_height = get_height();
 
@@ -242,10 +242,10 @@ void Bitmap::resize(int new_width, int new_height) {
 }
 
 /**
- * Gets the "dominant" color of this bitmap. For now, we simple return the average color, but something like finding
- * the most common color or something might be better.
+ * Gets the "dominant" color of this bitmap. For now, we simple return the average color, but
+ * something like finding the most common color or something might be better.
  */
-fw::Color Bitmap::get_dominant_color() const {
+fw::Color Bitmap::GetDominantColor() const {
   fw::Color average(0, 0, 0, 0);
   for(uint32_t rgba : data_->rgba) {
     average += fw::Color::from_abgr(rgba);

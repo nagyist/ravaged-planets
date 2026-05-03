@@ -35,7 +35,7 @@ public:
   std::filesystem::path get_filename() const;
 
   // Saves the bitmap to the given file.
-  Status save_bitmap(std::filesystem::path const &filename) const;
+  Status SaveBitmap(std::filesystem::path const &filename) const;
 
   // Gets the width/height (in pixels) of this image
   int get_width() const;
@@ -43,35 +43,35 @@ public:
 
   // Gets or sets the actual pixel data. We assume the format of the pixels is RGBA and that the given data is big
   // enough to fix this bitmap
-  std::vector<uint32_t> const &get_pixels() const;
-  void get_pixels(std::vector<uint32_t> &rgba) const;
-  void set_pixels(std::vector<uint32_t> const &rgba);
+  std::vector<uint32_t> const &GetPixels() const;
+  void GetPixels(std::vector<uint32_t> &rgba) const;
+  void SetPixels(std::vector<uint32_t> const &rgba);
 
   // Helper methods to get/set the color of a single pixel.
-  fw::Color get_pixel(int x, int y);
-  void set_pixel(int x, int y, fw::Color color);
-  void set_pixel(int x, int y, uint32_t rgba);
+  fw::Color GetPixel(int x, int y);
+  void SetPixel(int x, int y, fw::Color color);
+  void SetPixel(int x, int y, uint32_t rgba);
 
   // Copies the bitmap data from the given source image to our buffer.
-  void copy(fw::Bitmap const &src);
+  void Copy(fw::Bitmap const &src);
 
   // Resizes the bitmap to the new width/height
-  void resize(int new_width, int new_height);
+  void Resize(int new_width, int new_height);
 
   // Calculate the "dominant" color of this bitmap.
-  fw::Color get_dominant_color() const;
+  fw::Color GetDominantColor() const;
 
 private:
   std::shared_ptr<BitmapData> data_;
 };
 
 // Loads a Bitmap from the given file.
-StatusOr<Bitmap> load_bitmap(std::filesystem::path const &filename);
+StatusOr<Bitmap> LoadBitmap(std::filesystem::path const &filename);
 
 // Loads a Bitmap from the given in-memory data.
-StatusOr<Bitmap> load_bitmap(uint8_t const *data, size_t data_size);
+StatusOr<Bitmap> LoadBitmap(uint8_t const *data, size_t data_size);
 
 // Loads a Bitmap from the given texture.
-Bitmap load_bitmap(Texture &tex);
+Bitmap LoadBitmap(Texture &tex);
 
 }

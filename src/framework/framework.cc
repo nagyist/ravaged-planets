@@ -6,15 +6,12 @@
 #include <vector>
 
 #include <absl/strings/match.h>
-#include <cpptrace/from_current.hpp>
-#include <cpptrace/exceptions_macros.hpp>
-#include <SDL2/SDL.h>
 
 #include <framework/framework.h>
 #include <framework/audio.h>
+#include <framework/bitmap.h>
 #include <framework/logging.h>
 #include <framework/camera.h>
-#include <framework/bitmap.h>
 #include <framework/settings.h>
 #include <framework/graphics.h>
 #include <framework/cursor.h>
@@ -35,12 +32,6 @@
 using namespace std::placeholders;
 
 namespace fw {
-
-namespace {
-
-static std::thread::id g_update_thread_id;
-
-}
 
 struct ScreenshotRequest {
   int width;
@@ -95,9 +86,7 @@ fw::StatusOr<bool> Framework::initialize(char const *title) {
   RETURN_IF_ERROR(LogInitialize());
   language_initialize();
 
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
-    return fw::ErrorStatus("error initalizing SDL: ") << SDL_GetError();
-  }
+  RETURN_IF_ERROR(InitializeSDL());
 
   timer_ = new Timer();
 
@@ -267,25 +256,6 @@ void Framework::update_proc_impl() {
   }
 }
 
-void Framework::update_proc() {
-  g_update_thread_id = std::this_thread::get_id();
-
-  CPPTRACE_TRY {
-    update_proc_impl();
-  } CPPTRACE_CATCH(std::exception const &e) {
-    LOG(ERR) << "--------------------------------------------------------------------------------";
-    LOG(ERR) << "UNHANDLED EXCEPTION!";
-    LOG(ERR) << e.what();
-    LOG(ERR) << cpptrace::from_current_exception().to_string();
-    throw;
-  }/* CPPTRACE_CATCH (...) {
-    LOG(ERR) << "--------------------------------------------------------------------------------";
-    LOG(ERR) << "UNHANDLED EXCEPTION! (unknown exception)";
-    LOG(ERR) << cpptrace::from_current_exception().to_string();
-    throw;
-  }*/
-}
-
 void Framework::update(float dt) {
   fw::Get<gui::Gui>().update(dt);
   fw::Get<FontManager>().Update(dt);
@@ -304,15 +274,6 @@ void Framework::update(float dt) {
   input_->update(dt);
 }
 
-/* static */
-void Framework::ensure_update_thread() {
-  std::thread::id this_thread_id = std::this_thread::get_id();
-  if (this_thread_id != g_update_thread_id) {
-    LOG(ERR) << fw::ErrorStatus("expected to be running on the update thread.");
-    // TODO: something else?
-    std::terminate();
-  }
-}
 
 void Framework::render() {
   Camera* cam = fw::Framework::get_instance()->get_camera();
@@ -335,30 +296,6 @@ void Framework::render() {
   }
 
   fw::Get<Graphics>().after_render();
-}
-
-bool Framework::poll_events() {
-  SDL_Event e;
-  while (SDL_PollEvent(&e)) {
-    input_->process_event(e);
-    if (e.type == SDL_QUIT) {
-      LOG(INFO) << "Got quit signal, exiting.";
-      return false;
-    }
-  }
-  return true;
-}
-
-bool Framework::wait_events() {
-  SDL_Event e;
-  while (SDL_WaitEvent(&e)) {
-    input_->process_event(e);
-    if (e.type == SDL_QUIT) {
-      LOG(INFO) << "Got quit signal, exiting.";
-      return false;
-    }
-  }
-  return true;
 }
 
 void Framework::take_screenshot(
@@ -416,8 +353,11 @@ void Framework::take_screenshots(sg::Scenegraph &scenegraph) {
     fw::render(scenegraph, framebuffer, request->include_gui);
     scenegraph.pop_camera();
 
-    auto bitmap = load_bitmap(*color_target.get());
-    request->bitmap = load_bitmap(*color_target.get());
+// TODO: somehow windows.h is getting included and polluting our namespace.
+#undef LoadBitmap
+
+    auto bitmap = fw::LoadBitmap(*color_target.get());
+    request->bitmap = fw::LoadBitmap(*color_target.get());
     requests->push_back(request);
   }
 

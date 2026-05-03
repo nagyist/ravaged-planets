@@ -133,7 +133,7 @@ void Texture::create(fw::Bitmap const &bmp, GLenum internal_format /*= GL_RGBA8*
     glBindTexture(GL_TEXTURE_2D, data.texture_id);
     glTexImage2D(
         GL_TEXTURE_2D, 0, internal_format, data.width, data.height, 0,
-        format, component_type, bitmap.get_pixels().data());
+        format, component_type, bitmap.GetPixels().data());
   };
 }
 
@@ -185,8 +185,8 @@ void Texture::bind() const {
 }
 
 fw::Status Texture::save_png(fs::path const &filename) {
-  Bitmap bmp = load_bitmap(*this);
-  return bmp.save_bitmap(filename);
+  Bitmap bmp = LoadBitmap(*this);
+  return bmp.SaveBitmap(filename);
 }
 
 void Texture::calculate_size() const {
@@ -219,15 +219,15 @@ TextureArray::~TextureArray() {
 
 Status TextureArray::add(fs::path const& filename) {
   // TODO: check if data has been created.
-  ASSIGN_OR_RETURN(auto bmp, load_bitmap(filename));
-  bmp.resize(width_, height_);
+  ASSIGN_OR_RETURN(auto bmp, LoadBitmap(filename));
+  bmp.Resize(width_, height_);
   bitmaps_.push_back(bmp);
   return OkStatus();
 }
 
 void TextureArray::add(fw::Bitmap const &bmp) {
   auto resized_bmp = bmp;
-  resized_bmp.resize(width_, height_);
+  resized_bmp.Resize(width_, height_);
   bitmaps_.push_back(resized_bmp);
 }
 
@@ -243,7 +243,7 @@ void TextureArray::ensure_created() {
     auto& bitmap = bitmaps_[i];
     glTexSubImage3D(
         GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width_, height_, 1, GL_RGBA, GL_UNSIGNED_BYTE,
-        bitmap.get_pixels().data());
+        bitmap.GetPixels().data());
   }
 }
 

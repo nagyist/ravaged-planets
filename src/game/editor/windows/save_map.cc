@@ -166,7 +166,7 @@ bool SaveMapWindow::screenshot_clicked(Widget &w) {
 
 void SaveMapWindow::screenshot_complete(fw::Bitmap const &bitmap) {
   fw::Bitmap resized = bitmap;
-  resized.resize(640, 480);
+  resized.Resize(640, 480);
 
   auto world = dynamic_cast<EditorWorld *>(game::World::get_instance());
   world->set_screenshot(resized);

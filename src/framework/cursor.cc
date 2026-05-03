@@ -28,7 +28,7 @@ void Cursor::destroy() {
 }
 
 StatusOr<SDL_Cursor *> Cursor::load_cursor(std::string const &name) {
-  ASSIGN_OR_RETURN(fw::Bitmap bmp, load_bitmap(fw::resolve("cursors/" + name + ".png")));
+  ASSIGN_OR_RETURN(fw::Bitmap bmp, LoadBitmap(fw::resolve("cursors/" + name + ".png")));
 
   int hot_x = bmp.get_width() / 2;
   int hot_y = bmp.get_height() / 2;
@@ -51,7 +51,7 @@ StatusOr<SDL_Cursor *> Cursor::load_cursor(std::string const &name) {
 #endif
 
   SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
-      const_cast<void *>(reinterpret_cast<void const *>(bmp.get_pixels().data())),
+      const_cast<void *>(reinterpret_cast<void const *>(bmp.GetPixels().data())),
       bmp.get_width(), bmp.get_height(), 32, bmp.get_width() * 4, rmask, gmask, bmask, amask);
   SDL_Cursor *cursor = SDL_CreateColorCursor(surface, hot_x, hot_y);
   SDL_FreeSurface(surface);

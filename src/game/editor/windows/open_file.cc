@@ -220,7 +220,7 @@ void OpenFileWindow::OnItemSelected(int index) {
     bool is_image = false;
     if (ext == ".jpg" || ext == ".png") {
       // we only support JPG and PNG image formats
-      auto bmp_or_status = fw::load_bitmap(item_path);
+      auto bmp_or_status = fw::LoadBitmap(item_path);
       if (!bmp_or_status.ok()) {
         LOG(ERR) << "error loading bitmap '" << item_path << "': " << bmp_or_status.status();
       } else {
@@ -243,7 +243,7 @@ void OpenFileWindow::OnItemSelected(int index) {
             bmp_width = height * bmp_ratio;
           }
 
-          bmp.resize(bmp_width, bmp_height);
+          bmp.Resize(bmp_width, bmp_height);
         }
 
         std::shared_ptr<fw::Texture> texture = std::shared_ptr<fw::Texture>(new fw::Texture());

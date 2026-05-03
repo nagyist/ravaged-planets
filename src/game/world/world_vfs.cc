@@ -74,7 +74,7 @@ void WorldSummary::ensure_extra_loaded() const {
 
   auto screenshot_path = (*full_path) / "screenshot.png";
   if (fs::exists(screenshot_path)) {
-    auto screenshot = fw::load_bitmap((*full_path) / "screenshot.png");
+    auto screenshot = fw::LoadBitmap((*full_path) / "screenshot.png");
     if (screenshot.ok()) {
       screenshot_ = *screenshot;
     } else {

@@ -215,7 +215,7 @@ void TextureTool::update() {
     fw::Vector center(static_cast<float>(centre_x), static_cast<float>(centre_y), 0.0f);
 
     // we have to take a copy of the splatt's pixels cause we'll be modifying them
-    std::vector<uint32_t> data = splatt.get_pixels();
+    std::vector<uint32_t> data = splatt.GetPixels();
 
     uint8_t new_value = layer_;
     for (int y = centre_y - static_cast<int>(radius_ * scale_y);
@@ -235,7 +235,7 @@ void TextureTool::update() {
       }
     }
 
-    splatt.set_pixels(data);
+    splatt.SetPixels(data);
     fw::Get<fw::Graphics>().run_on_render_thread([=]() {
       terrain_->set_splatt(patch_x, patch_z, splatt);
     });

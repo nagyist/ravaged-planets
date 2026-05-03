@@ -317,7 +317,7 @@ bool HeightfieldToolWindow::on_import_clicked(fw::gui::Widget &w) {
 }
 
 void HeightfieldToolWindow::on_import_file_selected(ed::OpenFileWindow &ofw) {
-  auto bmp = fw::load_bitmap(ofw.get_selected_file());
+  auto bmp = fw::LoadBitmap(ofw.get_selected_file());
   if (!bmp.ok()) {
     // error, probably not an image?
     return;
@@ -409,10 +409,10 @@ void HeightfieldTool::import_heightfield(fw::Bitmap &bm) {
   int terrain_length = terrain_->get_length();
 
   // resize the bitmap so it's the same size as our terrain
-  bm.resize(terrain_width, terrain_length);
+  bm.Resize(terrain_width, terrain_length);
 
   // get the pixel data from the bitmap
-  std::vector<uint32_t> const &pixels = bm.get_pixels();
+  std::vector<uint32_t> const &pixels = bm.GetPixels();
 
   // now, for each pixel, we set the terrain height!
   for (int x = 0; x < terrain_width; x++) {

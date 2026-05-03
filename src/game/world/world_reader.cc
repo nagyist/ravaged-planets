@@ -54,7 +54,7 @@ fw::Status WorldReader::Read(std::string name) {
       std::string name = absl::StrCat("splatt-", patch_x, "-", patch_z, ".png");
       wfe = wf.get_entry(name, false /* for_write */);
 
-      ASSIGN_OR_RETURN(auto splatt, fw::load_bitmap(wfe.get_full_path().c_str()));
+      ASSIGN_OR_RETURN(auto splatt, fw::LoadBitmap(wfe.get_full_path().c_str()));
       terrain_->set_splatt(patch_x, patch_z, splatt);
     }
   }
@@ -63,14 +63,14 @@ fw::Status WorldReader::Read(std::string name) {
   if (wfe.exists()) {
     wfe.close();
 
-    ASSIGN_OR_RETURN(minimap_background_, fw::load_bitmap(wfe.get_full_path()));
+    ASSIGN_OR_RETURN(minimap_background_, fw::LoadBitmap(wfe.get_full_path()));
   }
 
   wfe = wf.get_entry("screenshot.png", false /* for_write */);
   if (wfe.exists()) {
     wfe.close();
 
-    ASSIGN_OR_RETURN(screenshot_, fw::load_bitmap(wfe.get_full_path()));
+    ASSIGN_OR_RETURN(screenshot_, fw::LoadBitmap(wfe.get_full_path()));
   }
 
   wfe = wf.get_entry(name + ".mapdesc", false /* for_write */);

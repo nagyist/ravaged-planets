@@ -75,7 +75,7 @@ void EditorTerrain::initialize_splatt() {
   }
 
   fw::Bitmap bmp(splatt_width, splatt_height);
-  bmp.set_pixels(buffer);
+  bmp.SetPixels(buffer);
 
   ensure_patches();
   for (int z = 0; z < get_patches_length(); z++) {

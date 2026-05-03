@@ -214,7 +214,7 @@ fw::Status FontFace::EnsureGlyph(char32_t ch) {
     for (int x = 0; x < face_->glyph->bitmap.width; x++) {
       uint32_t rgba = 0x00ffffff | (
           face_->glyph->bitmap.buffer[y * face_->glyph->bitmap.width + x] << 24);
-      bitmap_->set_pixel(offset_x + x, offset_y + y, rgba);
+      bitmap_->SetPixel(offset_x + x, offset_y + y, rgba);
     }
   }
 

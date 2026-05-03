@@ -39,7 +39,7 @@ fw::Status WorldWriter::write(std::string name) {
   // write the screenshot as well, which is pretty simple...
   if (world_->get_screenshot().get_width() > 0) {
     game::WorldFileEntry wfe = wf.get_entry("screenshot.png", true /* for_write */);
-    auto status = world_->get_screenshot().save_bitmap(wfe.get_full_path());
+    auto status = world_->get_screenshot().SaveBitmap(wfe.get_full_path());
     if (!status.ok()) {
       return status;
     }
@@ -66,7 +66,7 @@ fw::Status WorldWriter::write_terrain(game::WorldFile &wf) {
 
       std::string name = absl::StrCat("splatt-", patch_x, "-", patch_z, ".png");
       wfe = wf.get_entry(name, true /* for_write */);
-      RETURN_IF_ERROR(splatt.save_bitmap(wfe.get_full_path()));
+      RETURN_IF_ERROR(splatt.SaveBitmap(wfe.get_full_path()));
     }
   }
   return fw::OkStatus();
@@ -142,10 +142,10 @@ fw::Status WorldWriter::WriteMinimapBackground(game::WorldFile &wf) {
   }
 
   fw::Bitmap img(width, height);
-  img.set_pixels(pixels);
+  img.SetPixels(pixels);
 
   game::WorldFileEntry wfe = wf.get_entry("minimap.png", true /* for_write */);
-  return img.save_bitmap(wfe.get_full_path());
+  return img.SaveBitmap(wfe.get_full_path());
 }
 
 // gets the basic color of the terrain at the given (x,z) location
@@ -166,7 +166,7 @@ fw::Color WorldWriter::get_terrain_color(int x, int z) {
   int centre_x = static_cast<int>(centre_u * bmp.get_width());
   int centre_y = static_cast<int>(centre_v * bmp.get_height());
 
-  fw::Color splatt_color = bmp.get_pixel(centre_x, centre_y);
+  fw::Color splatt_color = bmp.GetPixel(centre_x, centre_y);
 
   fw::Color final_color(0, 0, 0);
   final_color += base_minimap_colors_[0] * splatt_color.a;
@@ -183,7 +183,7 @@ void WorldWriter::calculate_base_minimap_colors() {
   for (int i = 0; i < 4; i++) {
      // Use the average color of this layer
     fw::Bitmap const &layer_bmp = trn->get_layer(i);
-    base_minimap_colors_[i] = layer_bmp.get_dominant_color();
+    base_minimap_colors_[i] = layer_bmp.GetDominantColor();
     LOG(DBG) << "base minimap color [" << i << "] = " << base_minimap_colors_[i];
   }
 }

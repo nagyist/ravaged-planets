@@ -112,6 +112,8 @@ private:
 
   void on_fullscreen_toggle(std::string keyname, bool is_down);
 
+  fw::Status InitializeSDL();
+
 public:
   // construct a new Framework that'll call the methods of the given BaseApp
   Framework(BaseApp* app);

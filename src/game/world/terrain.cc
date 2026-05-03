@@ -51,7 +51,7 @@ fw::Status Terrain::initialize() {
   };
   int index = 0;
   for (const auto& bitmap_name : bitmap_names) {
-     ASSIGN_OR_RETURN(auto bitmap, fw::load_bitmap(bitmap_name));
+     ASSIGN_OR_RETURN(auto bitmap, fw::LoadBitmap(bitmap_name));
      set_layer(index++, bitmap);
   }
 

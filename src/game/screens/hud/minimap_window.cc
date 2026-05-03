@@ -180,7 +180,7 @@ void MinimapWindow::update_entity_display() {
   int pixel_height = 1 + static_cast<int>(0.5f + height / wnd_height);
 
   // make a copy of the minimap background's pixels
-  std::vector<uint32_t> pixels(game::World::get_instance()->get_minimap_background().get_pixels());
+  std::vector<uint32_t> pixels(game::World::get_instance()->get_minimap_background().GetPixels());
 
   // go through each minimap_visible Entity and draw it on our bitmap
   ent::EntityManager *ent_mgr = game::World::get_instance()->get_entity_manager();

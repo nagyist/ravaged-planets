@@ -4,7 +4,6 @@
 #include <mutex>
 
 #include <GL/glew.h>
-#include <SDL2/SDL_opengl.h>
 
 #include <framework/color.h>
 #include <framework/logging.h>
